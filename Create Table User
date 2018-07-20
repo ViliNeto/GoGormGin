@@ -1,0 +1,11 @@
+create table users
+(
+  usersid serial not null
+    constraint users_pkey
+    primary key,
+  username varchar(250) not null,
+  userpassword varchar(250) not null,
+  userpasswordb64 varchar(250)
+)
+;
+
