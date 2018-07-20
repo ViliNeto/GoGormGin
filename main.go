@@ -3,15 +3,64 @@ package main
 //Database gotuto
 
 import (
-	"net/http"
-	"github.com/gin-gonic/gin"
-	"fmt"
+	b64 "encoding/base64"
 	"encoding/json"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"net/http"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 type Login struct {
-	User string
+	User     string
 	Password string
+}
+
+type User struct {
+	Username        string
+	Userpassword    string `gorm:"default:''"`
+	Userpasswordb64 string `gorm:"default:''"`
+}
+
+func main() {
+
+	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
+	// By default gin.DefaultWriter = os.Stdout
+	router := gin.Default()
+
+	gin.SetMode("release")
+
+	//Usando gin.New()
+	//router := gin.New()
+
+	// Se usar o gin.Default() não precisa startar o logger
+	//router.Use(gin.Logger())
+
+	//Se usando gin.New() ou seja sem o default middleware chamar o Recovery para garantir que o serviço não caia
+	//router.Use(gin.Recovery())
+
+	////GET ou POST usando net/http
+	http.HandleFunc("/", rootPage)
+	//log.Fatal(http.ListenAndServe(":8081", nil))
+
+	//GET e POST usando GIN
+
+	//GET Simples ou Query
+	router.GET("/someGet", getting)
+
+	//GET Path
+	router.GET("/someGet/:User", getting)
+
+	//POST
+	router.POST("/somePost", posting)
+
+	//REGISTER POST
+	router.POST("/register", register)
+
+	router.Run(":8080")
+
 }
 
 //Função usando net/http do Go
@@ -30,11 +79,11 @@ func rootPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprintf(w, "Hi there, I love %s!", data)
+	fmt.Fprintf(w, "Fala %s!", data)
 
 }
 
-func getting(c *gin.Context){
+func getting(c *gin.Context) {
 
 	//Simples
 	c.String(200, "Recebido")
@@ -44,10 +93,10 @@ func getting(c *gin.Context){
 	if user == "" {
 		user = c.Query("User")
 	}
-	c.String(http.StatusOK, "\nHello %s", user)
+	c.String(http.StatusOK, "\nOlá %s", user)
 }
 
-func posting(c *gin.Context){
+func posting(c *gin.Context) {
 	var json Login
 	if err := c.ShouldBindJSON(&json); err == nil {
 		if json.User == "vili" && json.Password == "123" {
@@ -60,39 +109,24 @@ func posting(c *gin.Context){
 	}
 }
 
-func main() {
-	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
-	// By default gin.DefaultWriter = os.Stdout
-	//router := gin.Default()
-	//gin.SetMode("release")
+func register(c *gin.Context) {
+	var json Login
+	if err := c.ShouldBindJSON(&json); err == nil {
+		if json.User != "" && json.Password != "" {
+			db, err := gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=gotuto sslmode=disable password=vili")
+			if err != nil {
+				panic("Falha ao conectar ao banco de dados")
+			}
+			defer db.Close()
 
-	gin.SetMode("release")
+			var user = User{Username: json.User, Userpassword: json.Password, Userpasswordb64: b64.StdEncoding.EncodeToString([]byte(json.Password))}
+			db.Create(&user)
+			c.JSON(http.StatusOK, gin.H{"status": "Registrado com sucesso"})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
 
-	router := gin.New()
-
-	// Install the default logger, not required
-	router.Use(gin.Logger())
-
-	//Se usando gin.New() ou seja sem o default middleware chamar o Recovery para garantir que o serviço não caia
-	router.Use(gin.Recovery())
-
-	////GET ou POST usando net/http
-	//http.HandleFunc("/", rootPage)
-	//log.Fatal(http.ListenAndServe(":8081", nil))
-
-	//GET e POST usando GIN
-
-	//GET Simples ou Query
-	router.GET("/someGet", getting)
-
-	//GET Path
-	router.GET("/someGet/:User", getting)
-
-	//POST
-	router.POST("/somePost", posting)
-
-	router.Run(":8080")
-
-
-
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
 }
