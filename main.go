@@ -19,6 +19,7 @@ type Login struct {
 }
 
 type User struct {
+	Usersid          int64
 	Username        string
 	Userpassword    string `gorm:"default:''"`
 	Userpasswordb64 string `gorm:"default:''"`
@@ -120,8 +121,17 @@ func register(c *gin.Context) {
 			defer db.Close()
 
 			var user = User{Username: json.User, Userpassword: json.Password, Userpasswordb64: b64.StdEncoding.EncodeToString([]byte(json.Password))}
+
+			//Verifica se já existe o valor caso sim = true
+			var response = db.NewRecord(user)
+
 			db.Create(&user)
-			c.JSON(http.StatusOK, gin.H{"status": "Registrado com sucesso"})
+
+			if response {
+				c.JSON(http.StatusConflict, gin.H{"status": "Registro já existente"})
+			} else {
+				c.JSON(http.StatusOK, gin.H{"status": "Registrado com sucesso"})
+			}
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		}
