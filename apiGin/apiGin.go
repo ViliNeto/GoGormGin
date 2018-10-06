@@ -2,13 +2,14 @@ package apiGin
 
 import (
 	b64 "encoding/base64"
-	"github.com/jinzhu/gorm"
 	"net/http"
-	"github.com/gin-gonic/gin"
+
 	"../dto"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
-func StartRouter() *gin.Engine{
+func StartRouter() *gin.Engine {
 	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
 	// By default gin.DefaultWriter = os.Stdout
 	router := gin.Default()
@@ -29,14 +30,20 @@ func StartRouter() *gin.Engine{
 func Getting(c *gin.Context) {
 
 	//Simples
-	c.String(200, "Recebido")
+	c.String(http.StatusOK, "Recebido")
 
 	//Caso venha algo no Path
 	user := c.Param("User")
 	if user == "" {
 		user = c.Query("User")
 	}
-	c.String(http.StatusOK, "\nOlá %s", user)
+	if user != "" {
+		c.String(http.StatusOK, "\nOlá %s", user)
+	} else {
+		c.String(http.StatusOK, "\nOlá usuário desconhecido")
+
+	}
+
 }
 
 func Posting(c *gin.Context) {
