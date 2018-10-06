@@ -1,4 +1,4 @@
-package apiGin
+package apigin
 
 import (
 	b64 "encoding/base64"
@@ -9,6 +9,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+//StartRouter Função usada para se Startar o router do Gin
 func StartRouter() *gin.Engine {
 	// Logger middleware will write the logs to gin.DefaultWriter even if you set with GIN_MODE=release.
 	// By default gin.DefaultWriter = os.Stdout
@@ -27,6 +28,7 @@ func StartRouter() *gin.Engine {
 	return router
 }
 
+//Getting Função usada para se receber uma chamada get do Router do Gin
 func Getting(c *gin.Context) {
 
 	//Simples
@@ -46,6 +48,7 @@ func Getting(c *gin.Context) {
 
 }
 
+//Posting Função usada para se receber uma chamada post do Router do Gin
 func Posting(c *gin.Context) {
 	var json dto.Login
 	if err := c.ShouldBindJSON(&json); err == nil {
@@ -59,6 +62,7 @@ func Posting(c *gin.Context) {
 	}
 }
 
+//Register Função usada para se receber uma chamada post do Router do Gin e gravar dentro de um banco de dados a requisição
 func Register(c *gin.Context) {
 	var json dto.Login
 	if err := c.ShouldBindJSON(&json); err == nil {
