@@ -1,13 +1,14 @@
-package apiGo
+package apigo
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
 	"../dto"
 )
 
-//Função usando net/http do Go
+//RootPage Função usando net/http do Go
 func RootPage(w http.ResponseWriter, r *http.Request) {
 	//GET simples
 	//fmt.Fprintf(w, "Welcome to this page!")

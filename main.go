@@ -1,29 +1,30 @@
 package main
 
 import (
-	"./apiGin"
-	"./apiGo"
 	"net/http"
+
+	"./apigin"
+	"./apigo"
 )
 
 func main() {
 
-	router := apiGin.StartRouter()
+	router := apigin.StartRouter()
 
 	////GET ou POST usando net/http
-	http.HandleFunc("/", apiGo.RootPage)
+	http.HandleFunc("/", apigo.RootPage)
 
 	//GET Simples ou Query
-	router.GET("/someGet", apiGin.Getting)
+	router.GET("/someGet", apigin.Getting)
 
 	//GET Path
-	router.GET("/someGet/:User", apiGin.Getting)
+	router.GET("/someGet/:User", apigin.Getting)
 
 	//POST
-	router.POST("/somePost", apiGin.Posting)
+	router.POST("/somePost", apigin.Posting)
 
 	//REGISTER POST
-	router.POST("/register", apiGin.Register)
+	router.POST("/register", apigin.Register)
 
 	//Router Go
 	//log.Fatal(http.ListenAndServe(":8081", nil))
