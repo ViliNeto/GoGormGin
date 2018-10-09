@@ -11,10 +11,10 @@ import (
 //RootPage Função usando net/http do Go
 func RootPage(w http.ResponseWriter, r *http.Request) {
 	//GET simples
-	//fmt.Fprintf(w, "Welcome to this page!")
+	//fmt.Fprintf(w, "Bem vindo!")
 
 	//GET com URL Path
-	//fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+	//fmt.Fprintf(w, "Olá, eu amo %s!", r.URL.Path[1:])
 
 	//POST
 	decoder := json.NewDecoder(r.Body)
