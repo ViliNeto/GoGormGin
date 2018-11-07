@@ -28,6 +28,9 @@ func main() {
 	//REGISTER POST
 	router.POST("/register", apigin.Register)
 
+	//ATUALIZA CADASTRO POST
+	router.POST("/atualiza", apigin.AtualizaSenha)
+
 	//Router Go
 	//log.Fatal(http.ListenAndServe(":8081", nil))
 	//Router Gin

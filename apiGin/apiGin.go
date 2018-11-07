@@ -3,13 +3,11 @@ package apigin
 import (
 	b64 "encoding/base64"
 	"net/http"
+	"time"
 
+	"../connection"
 	"../dto"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
-
-	//Iniciando postgres dialect
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 //StartRouter Função usada para se Startar o router do Gin
@@ -70,16 +68,17 @@ func Register(c *gin.Context) {
 	var json dto.Login
 	if err := c.ShouldBindJSON(&json); err == nil {
 		if json.User != "" && json.Password != "" {
-			db, err := gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=gotuto sslmode=disable password=vili")
-			if err != nil {
-				println(err)
-				panic("Falha ao conectar ao banco de dados")
-			}
+
+			//Abre conexão com o Banco
+			db, _ := connection.AbrirConexao()
 			defer db.Close()
 
+			//Mapeia resposta da requisição para Struct User
 			var user = dto.User{Username: json.User, Userpassword: json.Password, Userpasswordb64: b64.StdEncoding.EncodeToString([]byte(json.Password))}
 
+			//Inicializa estrutura User que voltará de um select no Database
 			var returnUser dto.User
+
 			//Verifica se já existe
 			db.Where("username = ?", json.User).First(&returnUser)
 
@@ -98,4 +97,58 @@ func Register(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
+}
+
+//AtualizaSenha é um metodo que é chamado para alterar a senha do usuário
+func AtualizaSenha(c *gin.Context) {
+	var resp dto.Login
+	if err := c.ShouldBindJSON(&resp); err == nil {
+		if resp.User != "" && resp.Password != "" {
+
+			//Abre conexão
+			db, _ := connection.AbrirConexao()
+			defer db.Close()
+
+			//Select do banco de dados será gravado nessa variável
+			var returnUser dto.User
+
+			//Verifica se já existe
+			db.Where("username = ?", resp.User).First(&returnUser)
+
+			//Caso encontre o usuário
+			if returnUser.Username != "" {
+				//checa se a senha dele confere
+				if b64.StdEncoding.EncodeToString([]byte(resp.Password)) == returnUser.Userpasswordb64 {
+					//Caso nova senha seja vazia
+					if resp.NewPass == "" {
+						c.JSON(http.StatusBadRequest, gin.H{"error": "Nova senha inválida"})
+					} else {
+						go atualizaSenhaDatabase(resp)
+						c.JSON(http.StatusAccepted, gin.H{"status": "Atualização em andamento"})
+					}
+				} else {
+					//Caso a senha não seja igual a original
+					c.JSON(http.StatusForbidden, gin.H{"status": "Senha incorreta"})
+				}
+			} else {
+				//Caso o usuário não seja encontrado
+				c.JSON(http.StatusForbidden, gin.H{"status": "Usuário não encontrado"})
+			}
+		} else {
+			//Caso usuário ou senha sejam vazios
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+
+	} else {
+		//Caso não consiga fazer o unmarshal do json
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+}
+
+func atualizaSenhaDatabase(login dto.Login) {
+	time.Sleep(10 * time.Second)
+	db, _ := connection.AbrirConexao()
+	defer db.Close()
+	//Update a senha do usuário
+	db.Exec("UPDATE users SET userpasswordb64 = ?, userpassword = ?  WHERE username = ?", b64.StdEncoding.EncodeToString([]byte(login.NewPass)), login.NewPass, login.User)
 }
