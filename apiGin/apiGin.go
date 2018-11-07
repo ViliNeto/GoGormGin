@@ -7,6 +7,9 @@ import (
 	"../dto"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+
+	//Iniciando postgres dialect
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 //StartRouter Função usada para se Startar o router do Gin
@@ -69,20 +72,23 @@ func Register(c *gin.Context) {
 		if json.User != "" && json.Password != "" {
 			db, err := gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=gotuto sslmode=disable password=vili")
 			if err != nil {
+				println(err)
 				panic("Falha ao conectar ao banco de dados")
 			}
 			defer db.Close()
 
 			var user = dto.User{Username: json.User, Userpassword: json.Password, Userpasswordb64: b64.StdEncoding.EncodeToString([]byte(json.Password))}
 
-			//Verifica se já existe o valor caso sim = true
-			var response = db.NewRecord(user)
+			var returnUser dto.User
+			//Verifica se já existe
+			db.Where("username = ?", json.User).First(&returnUser)
 
-			db.Create(&user)
-
-			if response {
+			//Caso valor já exista não se cria o registro
+			if returnUser.Username != "" {
 				c.JSON(http.StatusConflict, gin.H{"status": "Registro já existente"})
 			} else {
+				// db.NewRecord(user)
+				db.Create(&user)
 				c.JSON(http.StatusOK, gin.H{"status": "Registrado com sucesso"})
 			}
 		} else {

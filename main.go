@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 
+	_ "database/sql"
+
 	"./apigin"
 	"./apigo"
 )
