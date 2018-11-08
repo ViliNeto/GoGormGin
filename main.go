@@ -13,7 +13,7 @@ func main() {
 
 	router := apigin.StartRouter()
 
-	////GET ou POST usando net/http
+	//GET ou POST usando net/http
 	http.HandleFunc("/", apigo.RootPage)
 
 	//GET Simples ou Query

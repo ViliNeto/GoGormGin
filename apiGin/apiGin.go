@@ -146,6 +146,7 @@ func AtualizaSenha(c *gin.Context) {
 }
 
 func atualizaSenhaDatabase(login dto.Login) {
+	//Simulando uma execução em fila (não processada no momento)
 	time.Sleep(10 * time.Second)
 	db, _ := connection.AbrirConexao()
 	defer db.Close()
