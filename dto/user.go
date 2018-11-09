@@ -1,7 +1,7 @@
 package dto
 
 type User struct {
-	Username        string
-	Userpassword    string `gorm:"default:''"`
-	Userpasswordb64 string `gorm:"default:''"`
+	Username    string
+	Userpass    string `gorm:"column:userpassword"`
+	Userpassb64 string `gorm:"column:userpasswordb64"`
 }

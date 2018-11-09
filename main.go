@@ -26,7 +26,7 @@ func main() {
 	router.POST("/somePost", apigin.Posting)
 
 	//REGISTER POST
-	router.POST("/register", apigin.Register)
+	router.POST("/registrar", apigin.Registrar)
 
 	//ATUALIZA CADASTRO POST
 	router.POST("/atualiza", apigin.AtualizaSenha)

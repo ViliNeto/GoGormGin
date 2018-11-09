@@ -53,28 +53,28 @@ func Getting(c *gin.Context) {
 func Posting(c *gin.Context) {
 	var json dto.Login
 	if err := c.ShouldBindJSON(&json); err == nil {
-		if json.User == "vili" && json.Password == "123" {
-			c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
+		if json.User == "vili" && json.Pass == "123" {
+			c.JSON(http.StatusOK, gin.H{"status": "Você está logado"})
 		} else {
-			c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+			c.JSON(http.StatusUnauthorized, gin.H{"status": "Acesso não autorizado"})
 		}
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 }
 
-//Register Função usada para se receber uma chamada post do Router do Gin e gravar dentro de um banco de dados a requisição
-func Register(c *gin.Context) {
+//Registrar Função usada para se receber uma chamada post do Router do Gin e gravar dentro de um banco de dados a requisição
+func Registrar(c *gin.Context) {
 	var json dto.Login
 	if err := c.ShouldBindJSON(&json); err == nil {
-		if json.User != "" && json.Password != "" {
+		if json.User != "" && json.Pass != "" {
 
 			//Abre conexão com o Banco
 			db, _ := connection.AbrirConexao()
 			defer db.Close()
 
 			//Mapeia resposta da requisição para Struct User
-			var user = dto.User{Username: json.User, Userpassword: json.Password, Userpasswordb64: b64.StdEncoding.EncodeToString([]byte(json.Password))}
+			var user = dto.User{Username: json.User, Userpass: json.Pass, Userpassb64: b64.StdEncoding.EncodeToString([]byte(json.Pass))}
 
 			//Inicializa estrutura User que voltará de um select no Database
 			var returnUser dto.User
@@ -103,7 +103,7 @@ func Register(c *gin.Context) {
 func AtualizaSenha(c *gin.Context) {
 	var resp dto.Login
 	if err := c.ShouldBindJSON(&resp); err == nil {
-		if resp.User != "" && resp.Password != "" {
+		if resp.User != "" && resp.Pass != "" {
 
 			//Abre conexão
 			db, _ := connection.AbrirConexao()
@@ -118,7 +118,7 @@ func AtualizaSenha(c *gin.Context) {
 			//Caso encontre o usuário
 			if returnUser.Username != "" {
 				//checa se a senha dele confere
-				if b64.StdEncoding.EncodeToString([]byte(resp.Password)) == returnUser.Userpasswordb64 {
+				if b64.StdEncoding.EncodeToString([]byte(resp.Pass)) == returnUser.Userpassb64 {
 					//Caso nova senha seja vazia
 					if resp.NewPass == "" {
 						c.JSON(http.StatusBadRequest, gin.H{"error": "Nova senha inválida"})
@@ -151,5 +151,6 @@ func atualizaSenhaDatabase(login dto.Login) {
 	db, _ := connection.AbrirConexao()
 	defer db.Close()
 	//Update a senha do usuário
-	db.Exec("UPDATE users SET userpasswordb64 = ?, userpassword = ?  WHERE username = ?", b64.StdEncoding.EncodeToString([]byte(login.NewPass)), login.NewPass, login.User)
+	err := db.Exec("UPDATE users SET userpasswordb64 = ?, userpassword = ?  WHERE username = ?", b64.StdEncoding.EncodeToString([]byte(login.NewPass)), login.NewPass, login.User)
+	println(err)
 }
