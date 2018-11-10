@@ -1,4 +1,7 @@
 # Go with Gorm and Gin
+
+Presentation -> https://slides.com/vilineto/deck/
+
 A minimal example using Gorm and Gin in Golang (Go)
 
 This example helps explain a little how Gorm and Gin can be a good way to go when developing a web application in Go.
